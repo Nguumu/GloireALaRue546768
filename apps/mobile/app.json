@@ -1,0 +1,18 @@
+{
+  "expo": {
+    "name": "TCG Collection",
+    "slug": "tcg-collection",
+    "scheme": "tcgcollection",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.tcgcollection.app"
+    },
+    "android": {
+      "package": "com.tcgcollection.app"
+    },
+    "plugins": ["expo-router"]
+  }
+}
