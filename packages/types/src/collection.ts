@@ -1,4 +1,5 @@
 import type { CardLanguage, ID } from "./common";
+import type { Card, CardPrinting } from "./game";
 
 /**
  * Closed set, not free text — the app relies on ordering these for filters
@@ -120,4 +121,30 @@ export interface DoublesRow {
   keepQuantity: number;
   surplus: number;
   surplusValueMinor: number | null;
+}
+
+/** Denormalized shape returned by collection queries, safe to render directly. */
+export interface CollectionEntryWithCard extends CollectionEntry {
+  printing: CardPrinting;
+  card: Card;
+  setCode: string;
+  setName: string;
+  storageLocationName: string | null;
+}
+
+/**
+ * Dashboard aggregate (section 28). `estimatedValueMinor`/`gainLossMinor`
+ * are null until a PriceProvider is wired (Phase 5) — the dashboard must
+ * show "—", never a fabricated number.
+ */
+export interface CollectionStats {
+  totalCards: number;
+  uniquePrintings: number;
+  totalPurchasePriceMinor: number | null;
+  estimatedValueMinor: number | null;
+  gainLossMinor: number | null;
+  doublesCount: number;
+  gradedCardsCount: number;
+  sealedProductsCount: number;
+  recentlyAdded: CollectionEntryWithCard[];
 }

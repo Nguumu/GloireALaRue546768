@@ -42,7 +42,8 @@ export async function signInAction(_prev: AuthActionState, formData: FormData): 
   const { error } = await supabase.auth.signInWithPassword(parsed.data);
   if (error) return { error: "Email ou mot de passe incorrect" };
 
-  redirect("/");
+  const next = formData.get("next");
+  redirect(typeof next === "string" && next.startsWith("/") ? next : "/");
 }
 
 export async function signOutAction(): Promise<void> {

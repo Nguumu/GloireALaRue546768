@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getCardDetail, getProductsForPrintings } from "@tcg/database";
 import { Badge, CardThumbnail, ColorPip, RarityBadge } from "@tcg/ui";
+import { AddToCollectionForm } from "@/components/AddToCollectionForm";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 
 interface PageProps {
@@ -29,6 +30,9 @@ export default async function CardDetailPage({ params }: PageProps) {
     supabase,
     printings.map((p) => p.id),
   );
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
   return (
     <div className="flex flex-col gap-10">
@@ -103,6 +107,13 @@ export default async function CardDetailPage({ params }: PageProps) {
                   <p className="text-xs text-surface-400">
                     Disponible dans : {products.map((p) => p.name).join(", ")}
                   </p>
+                )}
+                {user ? (
+                  <AddToCollectionForm cardPrintingId={printing.id} />
+                ) : (
+                  <Link href="/login" className="text-xs text-brand-600 hover:underline">
+                    Se connecter pour l&apos;ajouter
+                  </Link>
                 )}
               </div>
             );

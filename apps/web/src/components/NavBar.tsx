@@ -4,11 +4,15 @@ import { signOutAction } from "@/actions/auth";
 import { Button } from "@tcg/ui";
 import { ThemeToggle } from "./ThemeToggle";
 
-// Bottom-nav items grow as phases ship (Collection, Scanner, Decks, Wishlist,
-// Échanges, Actualités — section 44); only routes that exist are linked here.
-const PRIMARY_LINKS = [
+// Bottom-nav items grow as phases ship (Scanner, Decks, Wishlist, Échanges,
+// Actualités — section 44); only routes that exist are linked here.
+const PUBLIC_LINKS = [
   { href: "/", label: "Accueil" },
   { href: "/one-piece/cards", label: "Recherche" },
+];
+const AUTHENTICATED_LINKS = [
+  { href: "/collection", label: "Collection" },
+  { href: "/dashboard", label: "Dashboard" },
 ];
 
 export async function NavBar() {
@@ -16,6 +20,8 @@ export async function NavBar() {
   const {
     data: { user },
   } = await supabase.auth.getUser();
+
+  const links = user ? [...PUBLIC_LINKS, ...AUTHENTICATED_LINKS] : PUBLIC_LINKS;
 
   return (
     <>
@@ -26,7 +32,7 @@ export async function NavBar() {
           </Link>
 
           <nav className="hidden items-center gap-6 sm:flex">
-            {PRIMARY_LINKS.map((link) => (
+            {links.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
@@ -67,7 +73,7 @@ export async function NavBar() {
         className="fixed inset-x-0 bottom-0 z-20 flex border-t border-surface-200 bg-white/95 backdrop-blur sm:hidden dark:border-surface-800 dark:bg-surface-950/95"
         style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
       >
-        {PRIMARY_LINKS.map((link) => (
+        {(user ? [...PUBLIC_LINKS, AUTHENTICATED_LINKS[0]!] : PUBLIC_LINKS).map((link) => (
           <Link
             key={link.href}
             href={link.href}

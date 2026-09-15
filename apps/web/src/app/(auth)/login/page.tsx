@@ -2,6 +2,7 @@
 
 import { useFormState } from "react-dom";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { Button, Input } from "@tcg/ui";
 import { signInAction, type AuthActionState } from "@/actions/auth";
 
@@ -9,11 +10,13 @@ const initialState: AuthActionState = { error: null };
 
 export default function LoginPage() {
   const [state, formAction] = useFormState(signInAction, initialState);
+  const next = useSearchParams().get("next");
 
   return (
     <div className="mx-auto max-w-sm">
       <h1 className="mb-6 text-2xl font-bold">Connexion</h1>
       <form action={formAction} className="flex flex-col gap-4">
+        {next && <input type="hidden" name="next" value={next} />}
         <Input type="email" name="email" placeholder="Email" required autoComplete="email" />
         <Input
           type="password"

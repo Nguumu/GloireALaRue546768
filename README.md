@@ -36,7 +36,7 @@ Concrètement :
 | Mobile | Expo + Expo Router | Partage max de code avec le web via les packages ; pas de build natif géré à la main |
 | Backend | Supabase (Postgres + Auth + Storage + Realtime) | Pas de backend Node séparé à maintenir ; RLS pour la sécurité au niveau ligne |
 | Validation | Zod | Un seul schéma pour formulaires web, mobile et validation serveur |
-| État serveur | Requêtes directes en Server Components (Next) | Pas de TanStack Query en Phase 1 — sera ajouté en Phase 2/5 pour les mutations optimistes (quantités de collection, wishlist) |
+| État serveur | Requêtes directes en Server Components (Next), Server Actions + `useTransition` pour les mutations | Pas de TanStack Query : la Phase 2 (collection, doubles, dashboard) n'en a pas eu besoin — `revalidatePath` + Server Actions suffisent. À réévaluer si une vraie mutation optimiste devient nécessaire |
 | État global | Aucun (pas de Redux/Zustand) | Rien ne le justifie encore ; à réévaluer si un état vraiment transverse apparaît |
 | Styling web | Tailwind CSS | Léger, zéro CSS-in-JS runtime |
 | Styling mobile | React Native `StyleSheet` natif | NativeWind évalué mais pas retenu pour l'instant : le partage web/mobile réel vient des *packages logique*, pas des styles — voir §7 |
@@ -218,17 +218,51 @@ SaaS de feature flags — inutile à cette échelle. Flags actuels, tous à
   produits, tout retourne les vraies données de la fixture OP01. Capture de
   ce test disponible sur demande (non committée — c'est un test local, pas
   un artefact du produit).
-- Non vérifié en conditions réelles (car hors de portée de ce bac à sable) :
-  Supabase Auth (GoTrue) lui-même — testé uniquement contre PostgREST, pas
-  contre un vrai serveur d'auth, donc **à valider contre un vrai projet
-  Supabase avant mise en prod**. L'app mobile est type-checkée mais pas
-  lancée dans un simulateur (aucun simulateur iOS/Android disponible ici).
+- Non vérifié contre un vrai Supabase (car hors de portée de ce bac à
+  sable, toujours sans Docker) : la Phase 2 (voir ci-dessous) a testé le
+  flux d'auth de bout en bout contre un faux serveur GoTrue écrit pour
+  l'occasion (mêmes routes `/auth/v1/signup`, `/token`, `/user`, mêmes JWT
+  HS256 signés avec le `jwt-secret` que PostgREST vérifie) — ça valide le
+  contrat (cookies, `auth.uid()`, RLS) mais ce n'est pas le vrai GoTrue.
+  **À revalider contre un vrai projet Supabase avant mise en prod.** L'app
+  mobile est type-checkée mais pas lancée dans un simulateur (aucun
+  simulateur iOS/Android disponible ici).
 
-### Phase 2 — Collection : **schéma + requêtes DB prêts, UI pas commencée**
+### Phase 2 — Collection : **fait et vérifié**
 
-Tables `collection_entries`, `storage_locations`, doubles (`keep_quantity`)
-et dashboard sont dans le schéma (§4) et les types (§5), mais aucune page
-`/collection` n'existe encore. Prochaine étape logique.
+- `/collection` : liste paginée de la collection, tri (récentes, quantité,
+  nom, extension, rareté, personnage) et filtres (extension, rareté,
+  couleur) dans l'URL, édition inline (quantité, quantité à conserver,
+  emplacement, note, disponible à l'échange), suppression.
+- Ajout à la collection depuis la fiche carte, par impression (quantité,
+  état, emplacement en texte libre créé-ou-réutilisé, prix d'achat, date,
+  note) — fusionne avec l'entrée existante (même impression + état) plutôt
+  que dupliquer.
+- `/collection/doubles` : cartes où quantité > quantité à conserver, avec
+  le toggle "disponible à l'échange" (section 18).
+- `/dashboard` : cartes possédées, cartes uniques, prix d'achat total,
+  doubles, cartes gradées/produits scellés (0 pour l'instant), récemment
+  ajoutées — agrégats calculés côté serveur par une fonction Postgres
+  (`get_my_collection_stats`, une seule requête, jamais tout le tableau
+  rapatrié pour sommer côté client). "Valeur estimée" et "Master Set"
+  affichent honnêtement "—" plutôt qu'un chiffre inventé, en attendant la
+  Phase 5 (prix) et une future vue de progression par extension.
+- Nouvelle migration **0010** : une vue `collection_entries_detailed`
+  (jointure collection ⋈ impression ⋈ carte ⋈ set ⋈ emplacement,
+  `security_invoker = true` pour que les RLS de `collection_entries`
+  s'appliquent toujours) qui rend le tri/filtre/pagination triviaux sans
+  dépendre du typage fragile des embeds PostgREST imbriqués (voir le
+  commentaire dans `database.types.ts`).
+- Vérifié pour de vrai : migration 0010 appliquée sur Postgres local:
+  inscription réelle via le formulaire → trigger `on_auth_user_created` →
+  profil créé ; ajout d'une carte → apparaît dans `/collection` ; édition
+  de la quantité à conserver → la carte apparaît dans `/collection/doubles`
+  avec le bon nombre de surplus ; `/dashboard` affiche les bons agrégats
+  (testé : 6 cartes, 1 unique, 12,50 € d'achat, 1 double) — tout via un
+  script Playwright qui pilote un vrai navigateur à travers le vrai
+  formulaire d'inscription, pas un raccourci API. Un bug réel a été trouvé
+  et corrigé pendant ce test (la vignette de carte débordait dans
+  `/collection` à cause d'un conflit de classes Tailwind `w-full`/`w-20`).
 
 ### Phase 3 à 7 : **schéma prêt, logique métier pure prête, UI pas commencée**
 

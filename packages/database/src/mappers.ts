@@ -1,4 +1,4 @@
-import type { Card, CardPrinting, CardSet, Game, Product } from "@tcg/types";
+import type { Card, CardPrinting, CardSet, CollectionEntry, Game, Product, StorageLocation } from "@tcg/types";
 import type { Database } from "./types/database.types";
 
 type CardRow = Database["public"]["Tables"]["cards"]["Row"];
@@ -6,6 +6,8 @@ type CardPrintingRow = Database["public"]["Tables"]["card_printings"]["Row"];
 type SetRow = Database["public"]["Tables"]["sets"]["Row"];
 type GameRow = Database["public"]["Tables"]["games"]["Row"];
 type ProductRow = Database["public"]["Tables"]["products"]["Row"];
+type CollectionEntryRow = Database["public"]["Tables"]["collection_entries"]["Row"];
+type StorageLocationRow = Database["public"]["Tables"]["storage_locations"]["Row"];
 
 export function mapGameRow(row: GameRow): Game {
   return { id: row.id, code: row.code, name: row.name, isActive: row.is_active, createdAt: row.created_at };
@@ -77,5 +79,33 @@ export function mapProductRow(row: ProductRow): Product {
     setId: row.set_id,
     releaseDate: row.release_date,
     imageUrl: row.image_url,
+  };
+}
+
+export function mapCollectionEntryRow(row: CollectionEntryRow): CollectionEntry {
+  return {
+    id: row.id,
+    userId: row.user_id,
+    cardPrintingId: row.card_printing_id,
+    quantity: row.quantity,
+    keepQuantity: row.keep_quantity,
+    condition: row.condition as CollectionEntry["condition"],
+    purchasePriceMinor: row.purchase_price_minor,
+    purchaseDate: row.purchase_date,
+    storageLocationId: row.storage_location_id,
+    note: row.note,
+    availableForTrade: row.available_for_trade,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
+
+export function mapStorageLocationRow(row: StorageLocationRow): StorageLocation {
+  return {
+    id: row.id,
+    userId: row.user_id,
+    name: row.name,
+    parentId: row.parent_id,
+    createdAt: row.created_at,
   };
 }

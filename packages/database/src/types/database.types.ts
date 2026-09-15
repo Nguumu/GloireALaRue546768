@@ -476,12 +476,73 @@ export interface Database {
         { key: string; enabled?: boolean; description?: string | null; updated_at?: string }
       >;
     };
-    // `{ [_ in never]: never }` (not `Record<string, never>`) — an index
-    // signature here intersects into every Tables row and collapses all of
-    // them to `never`, which is exactly the generated-types convention this
-    // avoids.
-    Views: { [_ in never]: never };
-    Functions: { [_ in never]: never };
+    // `{ [_ in never]: never }` as the base (not `Record<string, never>`) — an
+    // index signature here intersects into every Tables row and collapses
+    // all of them to `never`. A named property like `collection_entries_detailed`
+    // below is fine: it has no index signature, so it can't poison anything.
+    Views: {
+      collection_entries_detailed: {
+        Row: {
+          id: string;
+          user_id: string;
+          card_printing_id: string;
+          quantity: number;
+          keep_quantity: number;
+          surplus: number;
+          condition: string;
+          purchase_price_minor: number | null;
+          purchase_date: string | null;
+          storage_location_id: string | null;
+          note: string | null;
+          available_for_trade: boolean;
+          created_at: string;
+          updated_at: string;
+          card_id: string;
+          set_id: string;
+          printing_language: string;
+          illustration_label: string | null;
+          is_foil: boolean;
+          is_parallel: boolean;
+          is_alternate_art: boolean;
+          is_promo: boolean;
+          collector_number: string | null;
+          image_small_url: string | null;
+          image_medium_url: string | null;
+          image_large_url: string | null;
+          game_id: string;
+          card_number: string;
+          card_name: string;
+          character: string | null;
+          colors: string[];
+          category: string;
+          rarity: string;
+          cost: number | null;
+          power: number | null;
+          counter: number | null;
+          attribute: string | null;
+          traits: string[];
+          card_text: string | null;
+          is_leader: boolean;
+          set_code: string;
+          set_name: string;
+          storage_location_name: string | null;
+        };
+        Relationships: [];
+      };
+    };
+    Functions: {
+      get_my_collection_stats: {
+        Args: Record<string, never>;
+        Returns: {
+          total_cards: number;
+          unique_printings: number;
+          total_purchase_price_minor: number | null;
+          doubles_count: number;
+          graded_cards_count: number;
+          sealed_products_count: number;
+        }[];
+      };
+    };
     Enums: { [_ in never]: never };
     CompositeTypes: { [_ in never]: never };
   };

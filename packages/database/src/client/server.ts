@@ -1,4 +1,5 @@
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
+import type { TypedSupabaseClient } from "./types";
 import type { Database } from "../types/database.types";
 
 /**
@@ -11,7 +12,7 @@ export interface CookieAdapter {
   remove(name: string, options: CookieOptions): void;
 }
 
-export function createSupabaseServerClient(cookies: CookieAdapter) {
+export function createSupabaseServerClient(cookies: CookieAdapter): TypedSupabaseClient {
   return createServerClient<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,

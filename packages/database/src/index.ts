@@ -8,3 +8,6 @@ export * from "./queries/cards";
 export * from "./queries/games";
 export * from "./queries/products";
 export * from "./queries/feature-flags";
+export * from "./queries/collection";
+export * from "./queries/storage-locations";
+export * from "./queries/sets";
